@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -39,16 +40,16 @@ function MainTabs({ route }) {
         headerTintColor: THEME.text,
       }}
     >
-      <Tab.Screen name="Home"      options={{ tabBarLabel: 'Home',      tabBarIcon: () => '🏠' }}>
+      <Tab.Screen name="Home"      options={{ tabBarLabel: 'Home',      tabBarIcon: () => <Text>🏠</Text> }}>
         {props => <HomeScreen {...props} token={token} user={user} />}
       </Tab.Screen>
-      <Tab.Screen name="Courses"   options={{ tabBarLabel: 'Courses',   tabBarIcon: () => '📚' }}>
+      <Tab.Screen name="Courses"   options={{ tabBarLabel: 'Courses',   tabBarIcon: () => <Text>📚</Text> }}>
         {props => <CoursesScreen {...props} token={token} user={user} />}
       </Tab.Screen>
-      <Tab.Screen name="My Learning" options={{ tabBarLabel: 'Learning', tabBarIcon: () => '🎓' }}>
+      <Tab.Screen name="My Learning" options={{ tabBarLabel: 'Learning', tabBarIcon: () => <Text>🎓</Text> }}>
         {props => <EnrolmentScreen {...props} token={token} user={user} />}
       </Tab.Screen>
-      <Tab.Screen name="Profile"   options={{ tabBarLabel: 'Profile',   tabBarIcon: () => '👤' }}>
+      <Tab.Screen name="Profile"   options={{ tabBarLabel: 'Profile',   tabBarIcon: () => <Text>👤</Text> }}>
         {props => <ProfileScreen {...props} token={token} user={user} />}
       </Tab.Screen>
     </Tab.Navigator>
