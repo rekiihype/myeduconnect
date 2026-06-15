@@ -14,7 +14,7 @@
 
 ### 1. Clone the Repository
 ```bash
-git clone <private-repo-url>
+git clone https://github.com/rekiihype/myeduconnect.git
 cd myeduconnect
 ```
 
@@ -39,7 +39,7 @@ Expected output:
 ```
 NAME                    STATUS          PORTS
 myeduconnect-nginx      running         0.0.0.0:80->80/tcp
-myeduconnect-backend    running         0.0.0.0:3000->3000/tcp, 0.0.0.0:2222->22/tcp
+myeduconnect-backend    running         0.0.0.0:3001->3000/tcp, 0.0.0.0:2222->22/tcp
 myeduconnect-postgres   running         0.0.0.0:5432->5432/tcp
 ```
 
