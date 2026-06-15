@@ -1,0 +1,22 @@
+# Node modules
+node_modules/
+.expo/
+dist/
+
+# Environment
+.env
+.env.local
+
+# Docker volumes
+postgres_data/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Uploads (don't commit actual uploaded files)
+backend/uploads/*
+!backend/uploads/.gitkeep
