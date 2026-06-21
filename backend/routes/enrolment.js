@@ -49,11 +49,11 @@ router.get('/:id', verifyToken, async (req, res) => {
        FROM enrolments e
        JOIN courses c ON e.course_id = c.id
        JOIN users u ON e.user_id = u.id
-       WHERE e.id = $1`,
-      [req.params.id]  // VULNERABLE: no ownership check
+       WHERE e.id = $1 AND e.user_id = $2`,
+      [req.params.id, req.user.id]
     );
 
-    if (result.rows.length === 0) return res.status(404).json({ error: 'Enrolment not found' });
+    if (result.rows.length === 0) return res.status(403).json({ error: 'Access denied' });
     res.json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });

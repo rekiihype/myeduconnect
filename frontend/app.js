@@ -352,7 +352,7 @@ async function renderCourseDetail(id) {
 
     // DELIBERATE XSS: bio rendered as raw HTML (V-03)
     const bioel = document.getElementById('teacher-bio');
-    if (bioel && c.teacher_bio) bioel.innerHTML = c.teacher_bio;
+    if (bioel && c.teacher_bio) bioel.textContent = c.teacher_bio;
   } catch (err) {
     app.innerHTML = renderNav() + `<div class="container"><div class="alert alert-error">${err.message}</div></div>` + renderFooter();
   }
@@ -406,7 +406,7 @@ async function renderProfile() {
 
     // DELIBERATE: innerHTML used (V-03)
     const bioEl = document.getElementById('profile-bio-display');
-    if (bioEl) bioEl.innerHTML = user.bio || '<em>No bio set</em>';
+    if (bioEl) bioEl.textContent = user.bio || 'No bio set';
   } catch (err) {
     app.innerHTML = renderNav() + `<div class="container"><div class="alert alert-error">${err.message}</div></div>` + renderFooter();
   }
@@ -424,7 +424,7 @@ async function updateProfile(e) {
     alertEl.innerHTML = `<div class="alert alert-success">Profile updated successfully!</div>`;
     // DELIBERATE: Re-render bio as innerHTML (V-03)
     const bioEl = document.getElementById('profile-bio-display');
-    if (bioEl) bioEl.innerHTML = data.user.bio || '';
+    if (bioEl) bioEl.textContent = data.user.bio || '';
   } catch (err) {
     alertEl.innerHTML = `<div class="alert alert-error">${err.message}</div>`;
   }

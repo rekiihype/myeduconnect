@@ -1,52 +1,45 @@
 
 services:
-  # ─── PostgreSQL Database ───────────────────────────────────────────────────
   postgres:
     image: postgres:15-alpine
     container_name: myeduconnect-postgres
     environment:
       POSTGRES_DB: myeduconnect
       POSTGRES_USER: edu_admin
-      POSTGRES_PASSWORD: password123        # DELIBERATE: weak password (V-13)
+      POSTGRES_PASSWORD: Edu@Connect2026!Str0ng
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
-    ports:
-      - "5432:5432"                         # DELIBERATE: exposed to host (V-13)
     networks:
       - myeduconnect-net
     restart: unless-stopped
 
-  # ─── Node.js Backend ───────────────────────────────────────────────────────
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: myeduconnect-backend
     environment:
-      DATABASE_URL: postgresql://edu_admin:password123@postgres:5432/myeduconnect
-      JWT_SECRET: secret                    # DELIBERATE: trivially guessable (V-11)
+      DATABASE_URL: postgresql://edu_admin:Edu@Connect2026!Str0ng@postgres:5432/myeduconnect
+      JWT_SECRET: a8f3d2c1e7b4f9a0c3e6d8b2a5f7e1c4d9b6a3f0e8c5b2d7a4f1e9c6b3d0a7f2
       PORT: 3000
-      NODE_ENV: development
+      NODE_ENV: production
     volumes:
       - ./backend/uploads:/uploads
-    ports:
-      - "3001:3000"                         # DELIBERATE: backend directly exposed (V-08) — use port 3001 (3000 taken by Docker Desktop)
-      - "2222:22"                           # DELIBERATE: SSH with weak creds (V-07)
     depends_on:
       - postgres
     networks:
       - myeduconnect-net
     restart: unless-stopped
 
-  # ─── Nginx Reverse Proxy ───────────────────────────────────────────────────
   nginx:
     build:
       context: .
       dockerfile: nginx/Dockerfile
     container_name: myeduconnect-nginx
     ports:
-      - "80:80"                             # HTTP only — no HTTPS (V-12)
+      - "80:80"
+      - "443:443"
     depends_on:
       - backend
     networks:
