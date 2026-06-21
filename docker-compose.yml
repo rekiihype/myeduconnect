@@ -46,8 +46,28 @@ services:
       - myeduconnect-net
     restart: unless-stopped
 
+  # Phase 5 IDS — Suricata monitors all traffic to the backend on port 3000
+  # network_mode: shares the backend container's network namespace so Suricata
+  # sees every request nginx forwards to backend:3000
+  ids:
+    image: jasonish/suricata:latest
+    container_name: myeduconnect-ids
+    network_mode: "service:backend"
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      - ./ids/rules:/etc/suricata/rules:ro
+      - ./ids/suricata.yaml:/etc/suricata/suricata.yaml:ro
+      - ids_logs:/var/log/suricata
+    command: -c /etc/suricata/suricata.yaml --af-packet=eth0 -v
+    depends_on:
+      - backend
+    restart: unless-stopped
+
 volumes:
   postgres_data:
+  ids_logs:
 
 networks:
   myeduconnect-net:

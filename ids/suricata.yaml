@@ -1,0 +1,48 @@
+%YAML 1.1
+---
+# Minimal Suricata config for MyEduConnect IDS — CCS6324 Phase 5
+# Monitors backend API traffic on port 3000
+
+vars:
+  address-groups:
+    HOME_NET: "[172.0.0.0/8,192.168.0.0/16,10.0.0.0/8]"
+    EXTERNAL_NET: "!$HOME_NET"
+  port-groups:
+    HTTP_PORTS: "3000"
+    SHELLCODE_PORTS: "!80"
+
+# Point at our 3 custom rules only
+default-rule-path: /etc/suricata/rules
+rule-files:
+  - myeduconnect.rules
+
+# Log alerts in fast (one-line) format — easy to screenshot
+outputs:
+  - fast:
+      enabled: yes
+      filename: /var/log/suricata/fast.log
+      append: yes
+  - eve-log:
+      enabled: no
+
+# App-layer: force HTTP parsing on port 3000
+app-layer:
+  protocols:
+    http:
+      enabled: yes
+      detection-ports:
+        dp: 3000
+
+# Capture method set via CLI (--af-packet or --pcap)
+af-packet:
+  - interface: eth0
+    cluster-id: 99
+    cluster-type: cluster_flow
+    defrag: yes
+
+# Minimal logging — suppress noise
+logging:
+  default-log-level: notice
+  outputs:
+    - console:
+        enabled: yes

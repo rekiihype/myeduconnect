@@ -1,0 +1,15 @@
+# MyEduConnect IDS Rules — CCS6324 Phase 5
+# Engine: Suricata 7.x
+# Covers: Phase 4 attack vectors (SQLi, Stored XSS, Brute-force login)
+
+# Rule 1 — SQL Injection attempt on login endpoint (W-01)
+# Fires when POST body to /api/auth/login contains SQL injection pattern
+alert http any any -> any any (msg:"MYEDUCONNECT SQLi Attempt on Login"; flow:to_server,established; http.method; content:"POST"; http.uri; content:"/api/auth/login"; http.request_body; content:"' OR "; nocase; classtype:web-application-attack; sid:1000001; rev:1;)
+
+# Rule 2 — Stored XSS attempt via profile bio update (W-02)
+# Fires when PUT body to /api/users/profile contains a <script tag
+alert http any any -> any any (msg:"MYEDUCONNECT XSS Attempt in Profile Bio"; flow:to_server,established; http.method; content:"PUT"; http.uri; content:"/api/users/profile"; http.request_body; content:"<script"; nocase; classtype:web-application-attack; sid:1000002; rev:1;)
+
+# Rule 3 — Brute-force login detection (V-06 / V-11 exploit path)
+# Fires after 5+ POST requests to /api/auth/login within 30 seconds from same source
+alert http any any -> any any (msg:"MYEDUCONNECT Brute Force Login Detected"; flow:to_server,established; http.method; content:"POST"; http.uri; content:"/api/auth/login"; threshold:type threshold,track by_src,count 5,seconds 30; classtype:attempted-user; sid:1000003; rev:1;)
